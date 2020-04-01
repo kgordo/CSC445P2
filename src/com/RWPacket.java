@@ -1,4 +1,4 @@
-package com.company;
+package com;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -8,11 +8,11 @@ import java.util.Collections;
 public class RWPacket extends Packet{
     byte[] header;
 
-    int optCode;
+    short optCode;
     String fileName;
     String mode;
 
-    public RWPacket(int optCode, String fileName, String mode) {
+    public RWPacket(short optCode, String fileName, String mode) {
         this.optCode = optCode;
         this.fileName = fileName;
         this.mode = mode;

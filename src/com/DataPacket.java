@@ -1,4 +1,4 @@
-package com.company;
+package com;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -9,12 +9,11 @@ public class DataPacket extends Packet {
 
     byte[] header;
 
-    int optCode;
+    short optCode = OPCODES.DATA;
     int blockNum;
     byte[] data;
 
-    public DataPacket (int optCode, int blockNum, byte[] data){
-        this.optCode = optCode;
+    public DataPacket (int blockNum, byte[] data){
         this.data = data;
         this.blockNum = blockNum;
         this.buildHeader();

@@ -1,3 +1,5 @@
+package com;
+
 public class OPCODES {
 
     public static final short RRQ = 1;
