@@ -6,36 +6,34 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class RWPacket extends Packet{
+
     byte[] header;
 
     short optCode;
     String fileName;
     String mode;
+    int size;
 
     public RWPacket(short optCode, String fileName, String mode) {
         this.optCode = optCode;
         this.fileName = fileName;
         this.mode = mode;
+        this.size = 4 + fileName.getBytes().length + mode.getBytes().length;
         buildHeader();
     }
 
     private void buildHeader(){
-        ArrayList<Byte> headerTemp = new ArrayList<>();
 
-        headerTemp.add(((byte) 0));
-        headerTemp.add(((byte) optCode));
+        ByteBuffer buffer = ByteBuffer.allocate(size);
 
-        Byte[] temp = toObjByteArr(fileName.getBytes());
-        Collections.addAll(headerTemp, temp);
+        buffer.putShort(optCode);
+        buffer.put(fileName.getBytes());
+        buffer.put(ZEROBYTE);
+        buffer.put(mode.getBytes());
+        buffer.put(ZEROBYTE);
 
-        headerTemp.add(((byte) 0));
+        header = buffer.array();
 
-        temp = toObjByteArr(mode.getBytes());
-        Collections.addAll(headerTemp, temp);
-
-        headerTemp.add(((byte) 0));
-
-        this.header = toPrimByteArr(headerTemp.toArray());
         System.out.println(Arrays.toString(header));
     }
 }

@@ -2,10 +2,9 @@ package com;
 
 import java.nio.ByteBuffer;
 
-public class ErrorPacket {
+public class ErrorPacket extends Packet {
 
     static final int FIXEDHEADERSIZE = 5;
-    static final byte ZEROBYTE = 0;
     private int size;
     short opCode = OPCODES.ERROR;
     short errorCode;
@@ -16,16 +15,18 @@ public class ErrorPacket {
         errorCode = ec;
         errorMsg = ERRORCODES.ERRORMESSAGES.get(ec);
         size = FIXEDHEADERSIZE + errorMsg.getBytes().length;
-        header = buildHeader();
+        buildHeader();
     }
 
-    byte[] buildHeader(){
+    private void buildHeader(){
+
         ByteBuffer buffer = ByteBuffer.allocate(size);
 
         buffer.putShort(opCode);
         buffer.putShort(errorCode);
         buffer.put(errorMsg.getBytes());
         buffer.put(ZEROBYTE);
-        return buffer.array();
+
+        header = buffer.array();
     }
 }

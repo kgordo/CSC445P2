@@ -11,17 +11,17 @@ public class ACKPacket extends Packet {
 
     public ACKPacket(int bn){
         blockNum = bn;
-        header = buildHeader();
+        buildHeader();
 
     }
 
-    public byte[] buildHeader(){
+    public void buildHeader(){
 
         ByteBuffer buffer = ByteBuffer.allocate(ACKSIZE);
         buffer.putShort(optCode);
         buffer.putInt(blockNum);
 
-        return buffer.array();
+        header = buffer.array();
     }
 
 

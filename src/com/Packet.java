@@ -2,6 +2,8 @@ package com;
 
 public class Packet {
 
+    static final byte ZEROBYTE = 0;
+
     public Byte[] toObjByteArr(byte[] b){
         Byte[] retArr = new Byte[b.length];
         for(int i = 0; i < b.length; i++){
