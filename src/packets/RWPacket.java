@@ -1,11 +1,11 @@
-package com;
+package packets;
+
+import packets.Packet;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
-public class RWPacket extends Packet{
+public class RWPacket extends Packet {
 
     byte[] header;
 

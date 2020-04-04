@@ -1,4 +1,6 @@
-package com.company;
+package com;
+
+import utils.XOR;
 
 import java.io.IOException;
 import java.net.*;

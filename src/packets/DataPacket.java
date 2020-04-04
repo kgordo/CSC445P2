@@ -1,10 +1,9 @@
-package com;
+package packets;
 
-import javax.swing.plaf.basic.BasicTextAreaUI;
+import codes.OPCODES;
+
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class DataPacket extends Packet {
 

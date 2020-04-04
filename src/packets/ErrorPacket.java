@@ -1,4 +1,7 @@
-package com;
+package packets;
+
+import codes.ERRORCODES;
+import codes.OPCODES;
 
 import java.nio.ByteBuffer;
 
@@ -29,4 +32,5 @@ public class ErrorPacket extends Packet {
 
         header = buffer.array();
     }
+
 }

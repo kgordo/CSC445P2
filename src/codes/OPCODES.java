@@ -1,4 +1,4 @@
-package com;
+package codes;
 
 public class OPCODES {
 

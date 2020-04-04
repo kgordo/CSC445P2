@@ -1,4 +1,6 @@
-package com;
+package packets;
+
+import codes.OPCODES;
 
 import java.nio.ByteBuffer;
 

@@ -1,11 +1,11 @@
-package com.company;
+package utils;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
 
 public class XOR {
-    byte[] key;
-    Random r = new Random();
+    public byte[] key;
+    public Random r = new Random();
 
     public XOR(){
         key = new byte[4];
