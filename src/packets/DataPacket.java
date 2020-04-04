@@ -7,8 +7,6 @@ import java.util.Arrays;
 
 public class DataPacket extends Packet {
 
-    byte[] header;
-
     short optCode = OPCODES.DATA;
     short blockNum;
     byte[] data;
@@ -29,9 +27,9 @@ public class DataPacket extends Packet {
         buffer.putShort(blockNum);
         buffer.put(data);
 
-        header = buffer.array();
+        HEADER = buffer.array();
 
         //maybe logic to get rid of packets and trow error if they exceed 512B
-        System.out.println(Arrays.toString(header));
+        System.out.println(Arrays.toString(HEADER));
     }
 }

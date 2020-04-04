@@ -12,7 +12,6 @@ public class ErrorPacket extends Packet {
     short opCode = OPCODES.ERROR;
     short errorCode;
     String errorMsg;
-    byte[] header;
 
     public ErrorPacket(short ec){
         errorCode = ec;
@@ -30,7 +29,7 @@ public class ErrorPacket extends Packet {
         buffer.put(errorMsg.getBytes());
         buffer.put(ZEROBYTE);
 
-        header = buffer.array();
+        HEADER = buffer.array();
     }
 
 }

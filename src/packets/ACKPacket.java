@@ -9,7 +9,6 @@ public class ACKPacket extends Packet {
     private static final int ACKSIZE = 4;
     short optCode = OPCODES.ACK;
     int blockNum;
-    byte[] header;
 
     public ACKPacket(int bn){
         blockNum = bn;
@@ -23,7 +22,7 @@ public class ACKPacket extends Packet {
         buffer.putShort(optCode);
         buffer.putInt(blockNum);
 
-        header = buffer.array();
+        HEADER = buffer.array();
     }
 
 

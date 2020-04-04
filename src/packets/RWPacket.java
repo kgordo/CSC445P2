@@ -7,8 +7,6 @@ import java.util.Arrays;
 
 public class RWPacket extends Packet {
 
-    byte[] header;
-
     short optCode;
     String fileName;
     String mode;
@@ -32,8 +30,8 @@ public class RWPacket extends Packet {
         buffer.put(mode.getBytes());
         buffer.put(ZEROBYTE);
 
-        header = buffer.array();
+        HEADER = buffer.array();
 
-        System.out.println(Arrays.toString(header));
+        System.out.println(Arrays.toString(HEADER));
     }
 }
