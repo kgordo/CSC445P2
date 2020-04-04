@@ -1,37 +1,50 @@
 package packets;
 
-import packets.Packet;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class RWPacket extends Packet {
 
-    short optCode;
+    static final String MODE = "octet";
+    short opCode;
     String fileName;
-    String mode;
     int size;
 
-    public RWPacket(short optCode, String fileName, String mode) {
-        this.optCode = optCode;
+    public RWPacket(short opCode, String fileName) {
+        this.opCode = opCode;
         this.fileName = fileName;
-        this.mode = mode;
-        this.size = 4 + fileName.getBytes().length + mode.getBytes().length;
+        this.size = 4 + fileName.getBytes().length + MODE.getBytes().length;
         buildHeader();
+    }
+
+    public RWPacket(byte[] bytes){
+        fromBytes(bytes);
     }
 
     private void buildHeader(){
 
         ByteBuffer buffer = ByteBuffer.allocate(size);
 
-        buffer.putShort(optCode);
+        buffer.putShort(opCode);
         buffer.put(fileName.getBytes());
         buffer.put(ZEROBYTE);
-        buffer.put(mode.getBytes());
+        buffer.put(MODE.getBytes());
         buffer.put(ZEROBYTE);
 
         HEADER = buffer.array();
 
         System.out.println(Arrays.toString(HEADER));
+    }
+
+    public void fromBytes(byte[] bytes){
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, bytes.length);
+        opCode = buffer.getShort();
+
+        StringBuilder sb = new StringBuilder();
+        byte b;
+        while ((b = buffer.get()) != ZEROBYTE) {
+            sb.append((char) b);
+        }
+        fileName = sb.toString();
     }
 }

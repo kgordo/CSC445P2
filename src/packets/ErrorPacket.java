@@ -20,6 +20,10 @@ public class ErrorPacket extends Packet {
         buildHeader();
     }
 
+    public ErrorPacket(byte[] bytes){
+        fromBytes(bytes);
+    }
+
     private void buildHeader(){
 
         ByteBuffer buffer = ByteBuffer.allocate(size);
@@ -31,5 +35,19 @@ public class ErrorPacket extends Packet {
 
         HEADER = buffer.array();
     }
+
+    public void fromBytes(byte[] bytes){
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, bytes.length);
+        opCode = buffer.getShort();
+        errorCode = buffer.getShort();
+
+        StringBuilder sb = new StringBuilder();
+        byte b;
+        while ((b = buffer.get()) != ZEROBYTE) {
+            sb.append((char) b);
+        }
+        errorMsg = sb.toString();
+    }
+
 
 }
