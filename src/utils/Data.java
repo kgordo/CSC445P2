@@ -15,7 +15,7 @@ public interface Data {
     static ArrayList<DatagramPacket> buildDataPackets(String fileName, InetAddress host, int port) throws IOException {
 
 
-        ArrayList<DatagramPacket> dataChunks = new ArrayList<>();
+        ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
 
         BufferedInputStream fileStream = new BufferedInputStream(new FileInputStream(fileName));
         int bytesRead = 0;
@@ -33,7 +33,7 @@ public interface Data {
         // Build DataPacket and add to ArrayList of packets
             DataPacket dataPacket = new DataPacket(blockNum, dataBuffer);
             dataPacket.buildPacket(host, port);
-            dataChunks.add(dataPacket.getDataGramPacket());
+            dataPackets.add(dataPacket.getDataGramPacket());
 
         // Increment block number
         blockNum++;
@@ -41,7 +41,7 @@ public interface Data {
         // This is probably redundant
             dataBuffer= new byte[512];
         }
-        return dataChunks;
+        return dataPackets;
     }
 
 }
