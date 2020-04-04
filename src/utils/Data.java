@@ -1,6 +1,10 @@
 package utils;
 
+import packets.DataPacket;
+
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -8,11 +12,14 @@ public interface Data {
 
     int MAX_SIZE = 512;
 
-    static ArrayList<byte[]> buildData(String fileName) throws IOException {
+    static ArrayList<DatagramPacket> buildDataPackets(String fileName, InetAddress host, int port) throws IOException {
 
-        ArrayList<byte []> dataChunks = new ArrayList<>();
+
+        ArrayList<DatagramPacket> dataChunks = new ArrayList<>();
+
         BufferedInputStream fileStream = new BufferedInputStream(new FileInputStream(fileName));
         int bytesRead = 0;
+        short blockNum = 0;
         byte[] dataBuffer = new byte[512];
 
         // Read 512 bytes at a time until end of file reached
@@ -23,8 +30,13 @@ public interface Data {
                 dataBuffer = Arrays.copyOfRange(new byte[bytesRead], 0, bytesRead);
             }
 
-        // Add byte[] to ArrayList of payloads
-            dataChunks.add(dataBuffer);
+        // Build DataPacket and add to ArrayList of packets
+            DataPacket dataPacket = new DataPacket(blockNum, dataBuffer);
+            dataPacket.buildPacket(host, port);
+            dataChunks.add(dataPacket.getDataGramPacket());
+
+        // Increment block number
+        blockNum++;
 
         // This is probably redundant
             dataBuffer= new byte[512];
