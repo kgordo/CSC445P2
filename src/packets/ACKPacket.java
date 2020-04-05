@@ -11,9 +11,9 @@ public class ACKPacket extends Packet {
 
     private static final int ACKSIZE = 4;
     short optCode = OPCODES.ACK;
-    int blockNum;
+    short blockNum;
 
-    public ACKPacket(int bn){
+    public ACKPacket(short bn){
         blockNum = bn;
         buildHeader();
 
@@ -27,7 +27,7 @@ public class ACKPacket extends Packet {
 
         ByteBuffer buffer = ByteBuffer.allocate(ACKSIZE);
         buffer.putShort(optCode);
-        buffer.putInt(blockNum);
+        buffer.putShort(blockNum);
 
         HEADER = buffer.array();
     }
@@ -35,20 +35,7 @@ public class ACKPacket extends Packet {
     public void fromBytes(byte[] bytes){
         ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, bytes.length);
         optCode = buffer.getShort();
-        blockNum = buffer.getInt();
+        blockNum = buffer.getShort();
     }
-
-
-    public static void main(String[] args) throws UnknownHostException {
-        ACKPacket test = new ACKPacket(1);
-        //test.buildPacket(InetAddress.getLocalHost(), 88);
-        //DatagramPacket test2 = test.getDataGramPacket();
-        //byte[] test3 = test2.getData();
-        //ACKPacket readTest = new ACKPacket(test3);
-        //System.out.println("Read block #: " + readTest.blockNum);
-
-    }
-
-
 
 }

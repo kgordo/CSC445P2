@@ -27,7 +27,7 @@ public interface Data {
 
         // If less than 512 bytes have been read, adjust the size of the byte[] accordingly
             if(bytesRead < MAX_SIZE){
-                dataBuffer = Arrays.copyOfRange(new byte[bytesRead], 0, bytesRead);
+               dataBuffer = Arrays.copyOfRange(dataBuffer, 0, bytesRead);
             }
 
         // Build DataPacket and add to ArrayList of packets

@@ -2,8 +2,15 @@ package packets;
 
 import codes.ERRORCODES;
 import codes.OPCODES;
+import utils.Data;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+
+import static codes.ERRORCODES.FILENOTFOUND;
 
 public class ErrorPacket extends Packet {
 
@@ -48,6 +55,5 @@ public class ErrorPacket extends Packet {
         }
         errorMsg = sb.toString();
     }
-
 
 }

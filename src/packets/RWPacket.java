@@ -1,7 +1,15 @@
 package packets;
 
+import utils.Data;
+import codes.OPCODES.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import static codes.OPCODES.WRQ;
 
 public class RWPacket extends Packet {
 
@@ -32,8 +40,6 @@ public class RWPacket extends Packet {
         buffer.put(ZEROBYTE);
 
         HEADER = buffer.array();
-
-        System.out.println(Arrays.toString(HEADER));
     }
 
     public void fromBytes(byte[] bytes){
@@ -47,4 +53,5 @@ public class RWPacket extends Packet {
         }
         fileName = sb.toString();
     }
+
 }

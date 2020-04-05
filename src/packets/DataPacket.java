@@ -1,7 +1,11 @@
 package packets;
 
 import codes.OPCODES;
+import utils.Data;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +24,10 @@ public class DataPacket extends Packet {
         this.buildHeader();
     }
 
+    public DataPacket(byte[] bytes){
+        fromBytes(bytes);
+    }
+
     private void buildHeader(){
 
         ByteBuffer buffer = ByteBuffer.allocate(size);
@@ -29,9 +37,6 @@ public class DataPacket extends Packet {
         buffer.put(data);
 
         HEADER = buffer.array();
-
-        //maybe logic to get rid of packets and trow error if they exceed 512B
-        System.out.println(Arrays.toString(HEADER));
     }
 
     public void fromBytes(byte[] bytes){
@@ -42,4 +47,5 @@ public class DataPacket extends Packet {
         data = new byte[buffer.remaining()];
         buffer.get(data);
     }
+
 }
