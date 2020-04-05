@@ -56,4 +56,7 @@ public class ErrorPacket extends Packet {
         errorMsg = sb.toString();
     }
 
+    public String getErrorMessage() {
+        return errorMsg;
+    }
 }

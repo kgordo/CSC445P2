@@ -15,7 +15,7 @@ public class ERRORCODES {
     public static final short FILEEXISTS = 6;
     public static final short NOSUCHUSER = 7;
 
-    public static final Map<Short, String> ERRORMESSAGES = new HashMap<>(){
+    public static final Map<Short, String> ERRORMESSAGES = new HashMap<Short, String>(){
         {
             put(UNDEFINED, "Unknown Error");
             put(FILENOTFOUND, "File Not Found");
