@@ -18,23 +18,56 @@ import static codes.OPCODES.*;
 
 public class Client {
 
-    String address = "cs.oswego.edu";
+    //String address = "cs.oswego.edu";
+    String address = "localhost";
     ArrayList<byte[]> downloadData = new ArrayList<>();
     InetAddress destination;
-    int port = 2850;
+    //int port = 2850;
+    int port = 1026;
     DatagramSocket socket;
 
     public void start() throws IOException {
 
-        XOR xor = new XOR();
         socket = new DatagramSocket();
-        destination = InetAddress.getByName(address);
+        handshake();
+        while(true){
+            DatagramPacket packet = new DatagramPacket(new byte[512], 512);
+            socket.receive(packet);
+            handle(packet);
+        }
+
+    }
+
+    public void handshake() {
+        XOR xor = new XOR();
+        try {
+            socket = new DatagramSocket();
+        } catch (SocketException e) {
+            System.err.println("Problem initializing socket");
+            e.printStackTrace();
+        }
+        try {
+            destination = InetAddress.getByName(address);
+        } catch (UnknownHostException e) {
+            System.err.println("Problem initializing host");
+            e.printStackTrace();
+        }
         DatagramPacket clientKey = new DatagramPacket(xor.getKey(), xor.getKey().length, destination, port);
-        socket.send(clientKey);
+        try {
+            socket.send(clientKey);
+        } catch (IOException e) {
+            System.err.println("Problem sending handshake to server");
+            e.printStackTrace();
+        }
 
         byte[] temp = new byte[4];
         DatagramPacket exchange = new DatagramPacket(temp, temp.length);
-        socket.receive(exchange);
+        try {
+            socket.receive(exchange);
+        } catch (IOException e) {
+            System.err.println("Problem receiving hanshake from server");
+            e.printStackTrace();
+        }
         xor.finishClientXOR(temp);
 
         System.out.println(Arrays.toString(xor.getKey()));

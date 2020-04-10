@@ -23,30 +23,49 @@ public class Server {
     ArrayList<byte[]> uploadedData = new ArrayList<>();
     DatagramSocket socket;
     InetAddress clientAddress;
-    int port = 2850;
+    //int port = 2850;
+    int port = 1026;
     int clientPort;
 
 
     public void start() throws IOException {
         socket = new DatagramSocket(port);
+        handshake();
         while(true) {
 
-            byte[] clientKey = new byte[4];
-            DatagramPacket packet = new DatagramPacket(clientKey, clientKey.length);
+            DatagramPacket packet = new DatagramPacket(new byte[512], 512);
             socket.receive(packet);
+            handle(packet);
 
-            clientAddress = packet.getAddress();
-            clientPort = packet.getPort();
-
-            clientKey = packet.getData();
-            XOR xor = new XOR(clientKey);
-
-            byte[] serverKey = xor.finishServerXOR();
-            DatagramPacket sendData = new DatagramPacket(serverKey, serverKey.length, clientAddress, packet.getPort());
-            socket.send(sendData);
-
-            System.out.println(Arrays.toString(xor.key));
         }
+    }
+
+    public void handshake(){
+        byte[] clientKey = new byte[4];
+        DatagramPacket packet = new DatagramPacket(clientKey, clientKey.length);
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            System.err.println("Problem receiving handshake from client");
+            e.printStackTrace();
+        }
+
+        clientAddress = packet.getAddress();
+        clientPort = packet.getPort();
+
+        clientKey = packet.getData();
+        XOR xor = new XOR(clientKey);
+
+        byte[] serverKey = xor.finishServerXOR();
+        DatagramPacket sendData = new DatagramPacket(serverKey, serverKey.length, clientAddress, packet.getPort());
+        try {
+            socket.send(sendData);
+        } catch (IOException e) {
+            System.err.println("Problem returning handshake to client");
+            e.printStackTrace();
+        }
+
+        System.out.println(Arrays.toString(xor.key));
     }
 
     public void handle(DatagramPacket packet){

@@ -32,8 +32,7 @@ public interface Data {
 
         // Build DataPacket and add to ArrayList of packets
             DataPacket dataPacket = new DataPacket(blockNum, dataBuffer);
-            dataPacket.buildPacket(host, port);
-            dataPackets.add(dataPacket.getDataGramPacket());
+            dataPackets.add(dataPacket.getDataGramPacket(host, port));
 
         // Increment block number
         blockNum++;
