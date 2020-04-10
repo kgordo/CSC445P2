@@ -5,12 +5,12 @@ import packets.DataPacket;
 import packets.ErrorPacket;
 import packets.RWPacket;
 import utils.XOR;
-import codes.OPCODES.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,20 +21,28 @@ import static codes.OPCODES.*;
 public class Server {
 
     ArrayList<byte[]> uploadedData = new ArrayList<>();
+    DatagramSocket socket;
+    InetAddress clientAddress;
+    int port = 2850;
+    int clientPort;
+
 
     public void start() throws IOException {
-        DatagramSocket socket = new DatagramSocket(2850);
+        socket = new DatagramSocket(port);
         while(true) {
 
             byte[] clientKey = new byte[4];
             DatagramPacket packet = new DatagramPacket(clientKey, clientKey.length);
             socket.receive(packet);
 
+            clientAddress = packet.getAddress();
+            clientPort = packet.getPort();
+
             clientKey = packet.getData();
             XOR xor = new XOR(clientKey);
 
             byte[] serverKey = xor.finishServerXOR();
-            DatagramPacket sendData = new DatagramPacket(serverKey, serverKey.length, packet.getAddress(), packet.getPort());
+            DatagramPacket sendData = new DatagramPacket(serverKey, serverKey.length, clientAddress, packet.getPort());
             socket.send(sendData);
 
             System.out.println(Arrays.toString(xor.key));
@@ -62,7 +70,13 @@ public class Server {
         }
         else{
             ErrorPacket badOpcode = new ErrorPacket(UNDEFINED);
-            //TODO:build DataGramPacket and send error to client
+            DatagramPacket errorPacket = badOpcode.getDataGramPacket(clientAddress, clientPort);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
         }
     }
 
@@ -71,7 +85,13 @@ public class Server {
         File fileToDownload = new File(rrq.getFileName());
         if(!fileToDownload.exists()){
             ErrorPacket fileNotFound = new ErrorPacket(FILENOTFOUND);
-            //TODO: Send error to client
+            DatagramPacket errorPacket = fileNotFound.getDataGramPacket(clientAddress, clientPort);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
             return;
         }
         //TODO: Start sending file to client
@@ -82,7 +102,13 @@ public class Server {
         File fileToUpload = new File(wrq.getFileName());
         if(fileToUpload.exists()){
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
-            //TODO: Send error to client
+            DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(clientAddress, clientPort);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
             return;
         }
         //TODO: Client wants to write file to server

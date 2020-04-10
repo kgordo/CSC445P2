@@ -13,7 +13,8 @@ public class Packet {
         packet = new DatagramPacket(HEADER, HEADER.length, host, port);
     }
 
-    public DatagramPacket getDataGramPacket(){
+    public DatagramPacket getDataGramPacket(InetAddress host, int port){
+        packet = new DatagramPacket(HEADER, HEADER.length, host, port);
         return packet;
     }
 }

@@ -20,13 +20,16 @@ public class Client {
 
     String address = "cs.oswego.edu";
     ArrayList<byte[]> downloadData = new ArrayList<>();
+    InetAddress destination;
+    int port = 2850;
+    DatagramSocket socket;
 
     public void start() throws IOException {
 
         XOR xor = new XOR();
-        DatagramSocket socket = new DatagramSocket();
-        InetAddress destination = InetAddress.getByName(address);
-        DatagramPacket clientKey = new DatagramPacket(xor.getKey(), xor.getKey().length, destination, 2850);
+        socket = new DatagramSocket();
+        destination = InetAddress.getByName(address);
+        DatagramPacket clientKey = new DatagramPacket(xor.getKey(), xor.getKey().length, destination, port);
         socket.send(clientKey);
 
         byte[] temp = new byte[4];
@@ -58,7 +61,13 @@ public class Client {
         }
         else{
             ErrorPacket badOpcode = new ErrorPacket(UNDEFINED);
-            //TODO:build DataGramPacket and send error to server
+            DatagramPacket errorPacket = badOpcode.getDataGramPacket(destination, port);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
         }
     }
 
@@ -67,7 +76,13 @@ public class Client {
         File fileToDownload = new File(rrq.getFileName());
         if(!fileToDownload.exists()){
             ErrorPacket fileNotFound = new ErrorPacket(FILENOTFOUND);
-            //TODO: Send error to server
+            DatagramPacket errorPacket = fileNotFound.getDataGramPacket(destination, port);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
             return;
         }
         //TODO: Start sending file to server
@@ -78,7 +93,13 @@ public class Client {
         File fileToUpload = new File(wrq.getFileName());
         if(fileToUpload.exists()){
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
-            //TODO: Send error to server
+            DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(destination, port);
+            try {
+                socket.send(errorPacket);
+            } catch (IOException e) {
+                System.err.println("Problem sending error message");
+                e.printStackTrace();
+            }
             return;
         }
         //TODO: Server wants to write file to client
