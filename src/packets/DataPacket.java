@@ -48,4 +48,8 @@ public class DataPacket extends Packet {
         buffer.get(data);
     }
 
+    public short getBlockNum(){return blockNum;}
+
+    public byte[] getData(){return data;}
+
 }

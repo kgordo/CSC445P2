@@ -38,4 +38,8 @@ public class ACKPacket extends Packet {
         blockNum = buffer.getShort();
     }
 
+    public short getBlockNum(){
+        return blockNum;
+    }
+
 }

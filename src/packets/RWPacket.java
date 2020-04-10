@@ -54,4 +54,5 @@ public class RWPacket extends Packet {
         fileName = sb.toString();
     }
 
+    public String getFileName(){return fileName;}
 }
