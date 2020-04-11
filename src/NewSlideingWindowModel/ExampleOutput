@@ -1,0 +1,60 @@
+Start t2 Is looking for: 2
+Start t0 Is looking for: 0
+Start t1 Is looking for: 1
+Start t4 Is looking for: 4
+Start t3 Is looking for: 3
+receved: 0
+Start t5 Is looking for: 5
+t0 releases a permit.
+[0, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+receved: 4
+[0, -32768, -32768, -32768, 4, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+receved: 1
+[0, 1, -32768, -32768, 4, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+receved: 2
+[0, 1, 2, -32768, 4, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+receved: 3
+[0, 1, 2, 3, 4, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+receved: 5
+[0, 1, 2, 3, 4, 5, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+t4 releases a permit.
+Start t7 Is looking for: 7
+t3 releases a permit.
+t5 releases a permit.
+t1 releases a permit.
+receved: 7
+[0, 1, 2, 3, 4, 5, -32768, 7, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+t2 releases a permit.
+Start t6 Is looking for: 6
+receved: 6
+[0, 1, 2, 3, 4, 5, 6, 7, -32768, -32768, -32768, -32768, -32768, -32768, -32768]   15
+Start t8 Is looking for: 8
+receved: 8
+[0, 1, 2, 3, 4, 5, 6, 7, 8, -32768, -32768, -32768, -32768, -32768, -32768]   15
+Start t9 Is looking for: 9
+receved: 9
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -32768, -32768, -32768, -32768, -32768]   15
+Start t10 Is looking for: 10
+receved: 10
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -32768, -32768, -32768, -32768]   15
+t7 releases a permit.
+Start t11 Is looking for: 11
+receved: 11
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, -32768, -32768, -32768]   15
+t6 releases a permit.
+Start t12 Is looking for: 12
+receved: 12
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, -32768, -32768]   15
+t8 releases a permit.
+Start t13 Is looking for: 13
+receved: 13
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -32768]   15
+t9 releases a permit.
+Start t14 Is looking for: 14
+receved: 14
+t10 releases a permit.
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]   15
+t11 releases a permit.
+t12 releases a permit.
+t13 releases a permit.
+t14 releases a permit.
