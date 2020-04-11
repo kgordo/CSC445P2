@@ -3,6 +3,7 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 public class SemExecutor {
+
     Semaphore sem;
     int windowSize = 3;
     Queue<RandNumThread> threads = new LinkedList<>();
@@ -49,4 +50,5 @@ public class SemExecutor {
         //stops random numbers by setting flag
         Shared.work = false;
     }
+
 }
