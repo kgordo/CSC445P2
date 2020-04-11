@@ -2,6 +2,7 @@ package packets;
 
 import codes.OPCODES;
 import utils.Data;
+import utils.XOR;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -22,10 +23,12 @@ public class DataPacket extends Packet {
         this.blockNum = blockNum;
         size = 2 + 2 + data.length;
         this.buildHeader();
+        encryptDecrypt();
     }
 
     public DataPacket(byte[] bytes){
         fromBytes(bytes);
+        encryptDecrypt();
     }
 
     private void buildHeader(){
@@ -46,6 +49,9 @@ public class DataPacket extends Packet {
 
         data = new byte[buffer.remaining()];
         buffer.get(data);
+
+        size = 2 + 2 + data.length;
+        buildHeader();
     }
 
     public short getBlockNum(){return blockNum;}

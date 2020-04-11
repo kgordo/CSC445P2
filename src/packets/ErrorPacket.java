@@ -25,10 +25,12 @@ public class ErrorPacket extends Packet {
         errorMsg = ERRORCODES.ERRORMESSAGES.get(ec);
         size = FIXEDHEADERSIZE + errorMsg.getBytes().length;
         buildHeader();
+        encryptDecrypt();
     }
 
     public ErrorPacket(byte[] bytes){
         fromBytes(bytes);
+        encryptDecrypt();
     }
 
     private void buildHeader(){
@@ -54,6 +56,9 @@ public class ErrorPacket extends Packet {
             sb.append((char) b);
         }
         errorMsg = sb.toString();
+
+        size = FIXEDHEADERSIZE + errorMsg.length();
+        buildHeader();
     }
 
     public String getErrorMessage() {

@@ -1,3 +1,5 @@
+package com;
+
 import java.util.ArrayList;
 
 class Shared {
@@ -9,8 +11,8 @@ class Shared {
     static ArrayList<Short> acks = new ArrayList<>();
     //stores all received acks in order
 
-    public static void setAcks(){
-        for(int i = 0; i < numThreads; i++){
+    public static void setAcks(int numAcks){
+        for(int i = 0; i < numAcks; i++){
             acks.add(Short.MIN_VALUE);
         }
     }
@@ -24,5 +26,9 @@ class Shared {
         }
         return acks.size();
     }
+
     //finds the furthest right acked packet //|0|1|-1|3|4| -> 1
+
+    public static void setWork(boolean b){work = b;}
+    public static boolean getWork(){return work;}
 }

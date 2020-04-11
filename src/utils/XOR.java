@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 public class XOR {
-    public byte[] key;
+    public static byte[] key;
     public Random r = new Random();
 
     public XOR(){
@@ -36,12 +36,12 @@ public class XOR {
         key = temp.array();
     }
 
-    private byte decode(byte k, byte n){
+    public static byte decode(byte k, byte n){
         return (byte) (n ^ k);
     }
     //uses bitshift xor to encrypt one byte
 
-    public byte[] fullDecode(byte[] data){
+    public static byte[] fullDecode(byte[] data){
         //give this method a byte[] and it will encrypt every cumulative
         //64 bits with the same xor keys
         byte[] result = new byte[data.length];

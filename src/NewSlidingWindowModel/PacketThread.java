@@ -52,7 +52,7 @@ class PacketThread extends Thread {
                 }
                 try {
                     socket.send(dp);
-		    //retries if it hasen't been receved
+		    //retries if it hasn't been received
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

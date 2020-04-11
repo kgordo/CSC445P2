@@ -31,7 +31,7 @@ public class PacketCatcher implements Runnable {
                 Shared.acks.set(add, add);
 		//sets the shared int array to confirm that the thread has received an ack,
         	//and hopefully push the left value forward
-                System.out.println("receved: " + add);
+                System.out.println("Received: " + add);
                 System.out.println(Arrays.toString(Shared.acks.toArray()) + "   " + Shared.acks.size());
             }
         }

@@ -23,10 +23,12 @@ public class RWPacket extends Packet {
         this.fileName = fileName;
         this.size = 4 + fileName.getBytes().length + MODE.getBytes().length;
         buildHeader();
+        encryptDecrypt();
     }
 
     public RWPacket(byte[] bytes){
         fromBytes(bytes);
+        encryptDecrypt();
     }
 
     private void buildHeader(){
@@ -52,6 +54,9 @@ public class RWPacket extends Packet {
             sb.append((char) b);
         }
         fileName = sb.toString();
+
+        size = 4 + MODE.getBytes().length + fileName.getBytes().length;
+        buildHeader();
     }
 
     public String getFileName(){return fileName;}

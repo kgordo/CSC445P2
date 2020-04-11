@@ -2,31 +2,29 @@ package packets;
 
 import codes.OPCODES;
 
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 public class ACKPacket extends Packet {
 
-    private static final int ACKSIZE = 4;
-    short optCode = OPCODES.ACK;
+    public static final int ACKSIZE = 4;
+    short opCode = OPCODES.ACK;
     short blockNum;
 
     public ACKPacket(short bn){
         blockNum = bn;
         buildHeader();
-
+        encryptDecrypt();
     }
 
     public ACKPacket(byte[] bytes){
         fromBytes(bytes);
+        encryptDecrypt();
     }
 
     public void buildHeader(){
 
         ByteBuffer buffer = ByteBuffer.allocate(ACKSIZE);
-        buffer.putShort(optCode);
+        buffer.putShort(opCode);
         buffer.putShort(blockNum);
 
         HEADER = buffer.array();
@@ -34,8 +32,10 @@ public class ACKPacket extends Packet {
 
     public void fromBytes(byte[] bytes){
         ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, bytes.length);
-        optCode = buffer.getShort();
+        opCode = buffer.getShort();
         blockNum = buffer.getShort();
+
+        buildHeader();
     }
 
     public short getBlockNum(){

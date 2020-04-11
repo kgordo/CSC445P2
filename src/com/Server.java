@@ -4,39 +4,53 @@ import packets.ACKPacket;
 import packets.DataPacket;
 import packets.ErrorPacket;
 import packets.RWPacket;
+import utils.Data;
 import utils.XOR;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.Semaphore;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
 
 public class Server {
 
-    ArrayList<byte[]> uploadedData = new ArrayList<>();
+    Semaphore sem;
+    ArrayList<byte[]> uploadData = new ArrayList<>(100);
     DatagramSocket socket;
     InetAddress clientAddress;
     //int port = 2850;
-    int port = 1026;
+    int port;
     int clientPort;
+    static final int WINDOWSIZE = 5;
 
 
     public void start() throws IOException {
+        Scanner stdin = new Scanner(System.in);
+
+        System.out.println("Enter port:");
+        port = Integer.parseInt(stdin.nextLine());
+
+        //Set address preference
+        System.out.println("IPv6? (Y/N):");
+        String format = stdin.nextLine();
+
+        setUploadData();
+        sem = new Semaphore(WINDOWSIZE);
         socket = new DatagramSocket(port);
         handshake();
         while(true) {
-
-            DatagramPacket packet = new DatagramPacket(new byte[512], 512);
+            DatagramPacket packet = new DatagramPacket(new byte[516], 516);
             socket.receive(packet);
             handle(packet);
-
         }
     }
 
@@ -64,7 +78,6 @@ public class Server {
             System.err.println("Problem returning handshake to client");
             e.printStackTrace();
         }
-
         System.out.println(Arrays.toString(xor.key));
     }
 
@@ -73,19 +86,23 @@ public class Server {
         short opCode = ByteBuffer.wrap(bytes).getShort();
 
         if(opCode == RRQ){
-            handleRRQ(bytes);
+            handleRRQ(packet);
         }
         else if(opCode == WRQ){
-            handleWRQ(bytes);
+            handleWRQ(packet);
         }
         else if(opCode == DATA){
-            handleDATA(bytes);
+            try {
+                handleDATA(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         else if(opCode == ACK){
-            handleACK(bytes);
+            handleACK(packet);
         }
         else if(opCode == ERROR){
-            handleError(bytes);
+            handleError(packet);
         }
         else{
             ErrorPacket badOpcode = new ErrorPacket(UNDEFINED);
@@ -99,9 +116,11 @@ public class Server {
         }
     }
 
-    public void handleRRQ(byte[] bytes){
+    public void handleRRQ(DatagramPacket packet){
+        byte[] bytes = packet.getData();
         RWPacket rrq = new RWPacket(bytes);
-        File fileToDownload = new File(rrq.getFileName());
+        String fileName = rrq.getFileName();
+        File fileToDownload = new File(fileName);
         if(!fileToDownload.exists()){
             ErrorPacket fileNotFound = new ErrorPacket(FILENOTFOUND);
             DatagramPacket errorPacket = fileNotFound.getDataGramPacket(clientAddress, clientPort);
@@ -113,10 +132,60 @@ public class Server {
             }
             return;
         }
-        //TODO: Start sending file to client
+        //Start sending file to client
+        sendData(fileName);
+        //Shared.setWork(false);
     }
 
-    public void handleWRQ(byte[] bytes){
+    public void sendData(String file){
+        Shared.setWork(true);
+        ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
+        Queue<PacketThread> threads = new LinkedList<>();
+        try {
+            dataPackets = Data.buildDataPackets(file, clientAddress, clientPort);
+        } catch (IOException e) {
+            System.err.println("Problem building data");
+            e.printStackTrace();
+        }
+        for(int i = 0; i < dataPackets.size(); ++i){
+            short blockNum = (short) i;
+            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, clientAddress, socket, clientPort);
+            threads.add(packetThread);
+        }
+        Shared.setAcks(threads.size());
+        int right = 0;
+        //this is easy to track because we only need to account for the
+        //last thread run
+        int queueSize = threads.size();
+        //queue used to organize execute order
+        while (right < queueSize) {
+            //functions until all threads have been started
+            if ((right - Shared.getLeft() < WINDOWSIZE) && sem.availablePermits() > 0) {
+                //checks to see if there are permits available and that the
+                //window size is not broken from left-most ack
+                threads.remove().start();
+                right++;
+            }
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        while (Shared.getLeft() != right) {
+            //waits for all acks to be received
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        //stops random numbers by setting flag
+        //Shared.setWork(false);
+    }
+
+    public void handleWRQ(DatagramPacket packet){
+        byte[] bytes = packet.getData();
         RWPacket wrq = new RWPacket(bytes);
         File fileToUpload = new File(wrq.getFileName());
         if(fileToUpload.exists()){
@@ -130,31 +199,53 @@ public class Server {
             }
             return;
         }
-        //TODO: Client wants to write file to server
     }
 
-    public void handleDATA(byte[] bytes){
+    public void handleDATA(DatagramPacket packet) throws IOException {
+        byte[] bytes = packet.getData();
         DataPacket data = new DataPacket(bytes);
         short blockNum = data.getBlockNum();
         byte[] packetData = data.getData();
-        //TODO: Do we want to lock here? Should we maybe initialize the instance variable uploadedData to some size?
-        if(uploadedData.get(blockNum) == null) {
-            uploadedData.add(blockNum, packetData);
+        if(uploadData.get(blockNum).length == 0) {
+            uploadData.add(blockNum, packetData);
+            ACKPacket ack = new ACKPacket(blockNum);
+            try {
+                socket.send(ack.getDataGramPacket(clientAddress, clientPort));
+            } catch (IOException e) {
+                System.err.println("Problem sending ACK to client");
+                e.printStackTrace();
+            }
+        }
+        if(packetData.length < 512){
+            FileOutputStream fos = new FileOutputStream("home/kate/Desktop/downloadFile");
+            for(byte[] block : uploadData){
+                fos.write(block);
+            }
+            fos.close();
         }
     }
 
-    public void handleACK(byte[] bytes){
+    public void handleACK(DatagramPacket packet){
+        byte[] bytes = packet.getData();
         ACKPacket ack = new ACKPacket(bytes);
         System.out.println("Received ACK for block: " + ack.getBlockNum());
     }
 
-    public void handleError(byte[] bytes){
+    public void handleError(DatagramPacket packet){
+        byte[] bytes = packet.getData();
         ErrorPacket errorPacket = new ErrorPacket(bytes);
         System.out.println(errorPacket.getErrorMessage());
+        Shared.setWork(false);
     }
 
     public static void main(String[] args) throws IOException {
         Server server = new Server();
         server.start();
+    }
+
+    void setUploadData(){
+        for(int i = 0; i < 100; ++i){
+            uploadData.add(i, new byte[0]);
+        }
     }
 }
