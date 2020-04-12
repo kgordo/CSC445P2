@@ -29,8 +29,8 @@ public class ErrorPacket extends Packet {
     }
 
     public ErrorPacket(byte[] bytes){
+        //encryptDecrypt(bytes);
         fromBytes(bytes);
-        encryptDecrypt();
     }
 
     private void buildHeader(){

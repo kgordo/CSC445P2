@@ -1,9 +1,7 @@
 package com;
 
-import packets.ACKPacket;
-import packets.DataPacket;
-import packets.ErrorPacket;
-import packets.RWPacket;
+import codes.OPCODES;
+import packets.*;
 import utils.Data;
 import utils.XOR;
 
@@ -83,6 +81,7 @@ public class Server {
 
     public void handle(DatagramPacket packet){
         byte[] bytes = packet.getData();
+        Packet.encryptDecrypt(bytes);
         short opCode = ByteBuffer.wrap(bytes).getShort();
 
         if(opCode == RRQ){
@@ -117,6 +116,7 @@ public class Server {
     }
 
     public void handleRRQ(DatagramPacket packet){
+        Shared.setWork(true);
         byte[] bytes = packet.getData();
         RWPacket rrq = new RWPacket(bytes);
         String fileName = rrq.getFileName();
@@ -138,7 +138,7 @@ public class Server {
     }
 
     public void sendData(String file){
-        Shared.setWork(true);
+        //Shared.setWork(true);
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
         try {
@@ -180,6 +180,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
+        threads.stream().forEach(PacketThread::interrupt);
         //stops random numbers by setting flag
         //Shared.setWork(false);
     }
@@ -188,6 +189,7 @@ public class Server {
         byte[] bytes = packet.getData();
         RWPacket wrq = new RWPacket(bytes);
         File fileToUpload = new File(wrq.getFileName());
+        /*
         if(fileToUpload.exists()){
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
             DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(clientAddress, clientPort);
@@ -198,30 +200,41 @@ public class Server {
                 e.printStackTrace();
             }
             return;
+        }*/
+        RWPacket rrq = new RWPacket(RRQ, wrq.getFileName());
+        try {
+            socket.send(rrq.getDataGramPacket(packet.getAddress(), packet.getPort()));
+        } catch (IOException e) {
+            System.err.println("Problem sending RRQ to client");
+            e.printStackTrace();
         }
     }
 
-    public void handleDATA(DatagramPacket packet) throws IOException {
-        byte[] bytes = packet.getData();
-        DataPacket data = new DataPacket(bytes);
+    public void handleDATA(DatagramPacket datagramPacket) throws IOException {
+        DataPacket data = new DataPacket(datagramPacket.getData());
         short blockNum = data.getBlockNum();
         byte[] packetData = data.getData();
+
         if(uploadData.get(blockNum).length == 0) {
             uploadData.add(blockNum, packetData);
             ACKPacket ack = new ACKPacket(blockNum);
+            DatagramPacket ackPacket = ack.getDataGramPacket(clientAddress, clientPort);
             try {
-                socket.send(ack.getDataGramPacket(clientAddress, clientPort));
+                socket.send(ackPacket);
             } catch (IOException e) {
                 System.err.println("Problem sending ACK to client");
                 e.printStackTrace();
             }
         }
         if(packetData.length < 512){
-            FileOutputStream fos = new FileOutputStream("home/kate/Desktop/downloadFile");
+            File download = new File(System.getProperty("user.home") + "/Desktop" + "/upload");
+            download.createNewFile();
+            FileOutputStream fos = new FileOutputStream(download, true);
             for(byte[] block : uploadData){
                 fos.write(block);
             }
             fos.close();
+            Shared.setWork(false);
         }
     }
 

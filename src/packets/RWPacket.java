@@ -27,8 +27,8 @@ public class RWPacket extends Packet {
     }
 
     public RWPacket(byte[] bytes){
+       // encryptDecrypt(bytes);
         fromBytes(bytes);
-        encryptDecrypt();
     }
 
     private void buildHeader(){

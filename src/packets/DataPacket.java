@@ -27,8 +27,8 @@ public class DataPacket extends Packet {
     }
 
     public DataPacket(byte[] bytes){
+      //  encryptDecrypt(bytes);
         fromBytes(bytes);
-        encryptDecrypt();
     }
 
     private void buildHeader(){

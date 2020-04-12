@@ -49,7 +49,7 @@ public class Client {
             System.setProperty("java.net.preferIPv4Stack", "true");
         }
 
-        /*TODO
+        //TODO: Doesn't actually do anything yet
         //Set drop preference
         System.out.println("Drop 1% of packets (Y/N):");
         String drop = stdin.nextLine();
@@ -60,20 +60,34 @@ public class Client {
         else if(drop.equalsIgnoreCase("n")){
             dropPackets = false;
         }
-        */
 
         socket = new DatagramSocket();
         handshake();
 
         while(true){
-            System.out.println("Enter file to download: ");
-            String fileName = stdin.nextLine();
-            RWPacket rrq = new RWPacket(OPCODES.RRQ, fileName);
-            socket.send(rrq.getDataGramPacket(InetAddress.getLocalHost(), port));
-            while(Shared.getWork()) {
-                DatagramPacket packet = new DatagramPacket(new byte[516], 516);
-                socket.receive(packet);
-                handle(packet);
+            System.out.println("Upload or Download (U/D):");
+            String uploadDownload = stdin.nextLine();
+            if(uploadDownload.equalsIgnoreCase("u")){
+                System.out.println("Enter file to upload: ");
+                String fileName = stdin.nextLine();
+                RWPacket wrq = new RWPacket(OPCODES.WRQ, fileName);
+                socket.send(wrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+                while (Shared.getWork()) {
+                    DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+                    socket.receive(packet);
+                    handle(packet);
+                }
+
+            } else if(uploadDownload.equalsIgnoreCase("d")) {
+                System.out.println("Enter file to download: ");
+                String fileName = stdin.nextLine();
+                RWPacket rrq = new RWPacket(OPCODES.RRQ, fileName);
+                socket.send(rrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+                while (Shared.getWork()) {
+                    DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+                    socket.receive(packet);
+                    handle(packet);
+                }
             }
         }
 
@@ -116,6 +130,7 @@ public class Client {
 
     public void handle(DatagramPacket packet){
         byte[] bytes = packet.getData();
+        Packet.encryptDecrypt(bytes);
         int dataLength = packet.getLength();
         bytes = Arrays.copyOfRange(bytes, 0, dataLength);
         Packet.encryptDecrypt(bytes);
@@ -210,7 +225,8 @@ public class Client {
             }
         }
         //stops random numbers by setting flag
-        Shared.setWork(false);
+        //Shared.setWork(false);
+        threads.stream().forEach(PacketThread::interrupt);
     }
 
 
@@ -227,6 +243,13 @@ public class Client {
                 e.printStackTrace();
             }
             return;
+        }
+        RWPacket rrq = new RWPacket(RRQ, wrq.getFileName());
+        try {
+            socket.send(rrq.getDataGramPacket(destination, port));
+        } catch (IOException e) {
+            System.err.println("Problem sending RRQ to client");
+            e.printStackTrace();
         }
     }
 

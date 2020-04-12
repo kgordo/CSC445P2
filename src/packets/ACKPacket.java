@@ -17,8 +17,8 @@ public class ACKPacket extends Packet {
     }
 
     public ACKPacket(byte[] bytes){
+      //  encryptDecrypt(bytes);
         fromBytes(bytes);
-        encryptDecrypt();
     }
 
     public void buildHeader(){
