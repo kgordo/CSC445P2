@@ -3,11 +3,13 @@ package com;
 import packets.ACKPacket;
 import packets.DataPacket;
 import packets.Packet;
+import utils.Timeout;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
@@ -21,6 +23,8 @@ class PacketThread extends Thread {
     byte[] data;
     ACKPacket ack;
     DatagramPacket dataPacket;
+    double timeout = 2000;
+    double start;
     private volatile boolean exit = false;
 
     public PacketThread(Semaphore sem, DatagramPacket dp, short blockNum, InetAddress destination, DatagramSocket socket, int port) {
@@ -48,7 +52,7 @@ class PacketThread extends Thread {
                 //DatagramPacket dp = new DatagramPacket(data, data.length, destination, port);
                 try {
                     socket.send(dataPacket);
-                    Thread.sleep(100);
+                    //Thread.sleep(100);
                     //send packet
                 } catch (IOException e) {
                     System.err.println("Problem sending data");
@@ -56,9 +60,14 @@ class PacketThread extends Thread {
                 }
                 boolean notReceived = true;
                 while (notReceived) {
+                    start = System.currentTimeMillis();
                     DatagramPacket ackReceived = new DatagramPacket(new byte[ACKPacket.ACKSIZE], ACKPacket.ACKSIZE);
                     socket.receive(ackReceived);
                     if (ackReceived != null) {
+                        double end = System.currentTimeMillis();
+                        double rtt = Math.abs(end - start);
+                        timeout = Timeout.calculate(rtt);
+
                         ack = new ACKPacket(ackReceived.getData());
                         if (!Shared.acks.contains(blockNum)) {
                             Shared.acks.add(ack.getBlockNum(), ack.getBlockNum());
@@ -73,7 +82,7 @@ class PacketThread extends Thread {
                             e.printStackTrace();
                         }
                         //TODO: Timeout logic
-                        Thread.sleep(10);
+                        //Thread.sleep(10);
                     }
                 }
 
@@ -83,6 +92,11 @@ class PacketThread extends Thread {
                 e.printStackTrace();
             }
         } finally {
+            try {
+                socket.setSoTimeout((int)timeout);
+            } catch (SocketException e) {
+                start = System.currentTimeMillis();
+            }
             sem.release();
             System.out.println("Thread " + blockNum + " releases a permit.");
             interrupt();
