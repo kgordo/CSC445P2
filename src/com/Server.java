@@ -12,23 +12,27 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
+import static utils.Timeout.MAXTIMEOUT;
 
 public class Server {
-
+    ReentrantLock lock = new ReentrantLock();
     Semaphore sem;
     ArrayList<byte[]> uploadData = new ArrayList<>(100);
     DatagramSocket socket;
+    DatagramSocket threadSocket;
     InetAddress clientAddress;
     //int port = 2850;
     int port;
     int clientPort;
-    static final int WINDOWSIZE = 5;
+    static final int WINDOWSIZE = 7;
 
 
     public void start() throws IOException {
@@ -134,13 +138,18 @@ public class Server {
         }
         //Start sending file to client
         sendData(fileName);
-        //Shared.setWork(false);
     }
 
     public void sendData(String file){
-        //Shared.setWork(true);
+        Shared.setWork(true);
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
+        try {
+            threadSocket = new DatagramSocket(0, clientAddress);
+        } catch (SocketException e) {
+            System.err.println("Problem instantiating packetThread socket");
+            e.printStackTrace();
+        }
         try {
             dataPackets = Data.buildDataPackets(file, clientAddress, clientPort);
         } catch (IOException e) {
@@ -149,7 +158,7 @@ public class Server {
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, clientAddress, socket, clientPort);
+            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, clientAddress, threadSocket, clientPort);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -175,21 +184,19 @@ public class Server {
         while (Shared.getLeft() != right) {
             //waits for all acks to be received
             try {
-                Thread.sleep(1);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        threads.stream().forEach(PacketThread::interrupt);
-        //stops random numbers by setting flag
-        //Shared.setWork(false);
+        System.out.println("Somehow escapes ");
+        sem.release(WINDOWSIZE);
     }
 
     public void handleWRQ(DatagramPacket packet){
         byte[] bytes = packet.getData();
         RWPacket wrq = new RWPacket(bytes);
         File fileToUpload = new File(wrq.getFileName());
-        /*
         if(fileToUpload.exists()){
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
             DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(clientAddress, clientPort);
@@ -200,7 +207,7 @@ public class Server {
                 e.printStackTrace();
             }
             return;
-        }*/
+        }
         RWPacket rrq = new RWPacket(RRQ, wrq.getFileName());
         try {
             socket.send(rrq.getDataGramPacket(packet.getAddress(), packet.getPort()));

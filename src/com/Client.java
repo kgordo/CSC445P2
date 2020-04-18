@@ -13,12 +13,14 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
+import static utils.Timeout.MAXTIMEOUT;
 
 public class Client {
-
+    ReentrantLock lock = new ReentrantLock();
     //String address = "cs.oswego.edu";
     static final int WINDOWSIZE = 5;
     private static final byte ZEROBYTE = 0;
@@ -28,6 +30,8 @@ public class Client {
     InetAddress destination;
     int port;
     DatagramSocket socket;
+    DatagramSocket threadSocket;
+    String fileName;
 
     public void start() throws IOException, InterruptedException {
         setDownloadData();
@@ -42,10 +46,9 @@ public class Client {
         System.out.println("IPv6? (Y/N):");
         String format = stdin.nextLine();
 
-        if(format.equalsIgnoreCase("y")){
+        if (format.equalsIgnoreCase("y")) {
             System.setProperty("java.net.preferIPv4Stack", "false");
-        }
-        else if(format.equalsIgnoreCase("n")){
+        } else if (format.equalsIgnoreCase("n")) {
             System.setProperty("java.net.preferIPv4Stack", "true");
         }
 
@@ -54,40 +57,39 @@ public class Client {
         System.out.println("Drop 1% of packets (Y/N):");
         String drop = stdin.nextLine();
 
-        if(drop.equalsIgnoreCase("y")){
+        if (drop.equalsIgnoreCase("y")) {
             dropPackets = true;
-        }
-        else if(drop.equalsIgnoreCase("n")){
+        } else if (drop.equalsIgnoreCase("n")) {
             dropPackets = false;
         }
+        System.out.println("Upload or Download (U/D):");
+        String uploadDownload = stdin.nextLine();
+        if (uploadDownload.equalsIgnoreCase("u")) {
+            System.out.println("Enter file to upload: ");
+        } else if (uploadDownload.equalsIgnoreCase("d")) {
+            System.out.println("Enter file to download: ");
+        }
+        fileName = stdin.nextLine();
 
         socket = new DatagramSocket();
         handshake();
 
-        while(true){
-            System.out.println("Upload or Download (U/D):");
-            String uploadDownload = stdin.nextLine();
-            if(uploadDownload.equalsIgnoreCase("u")){
-                System.out.println("Enter file to upload: ");
-                String fileName = stdin.nextLine();
-                RWPacket wrq = new RWPacket(OPCODES.WRQ, fileName);
-                socket.send(wrq.getDataGramPacket(InetAddress.getLocalHost(), port));
-                while (Shared.getWork()) {
-                    DatagramPacket packet = new DatagramPacket(new byte[516], 516);
-                    socket.receive(packet);
-                    handle(packet);
-                }
+        if (uploadDownload.equalsIgnoreCase("u")) {
+            RWPacket wrq = new RWPacket(OPCODES.WRQ, fileName);
+            socket.send(wrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+            while (Shared.getWork()) {
+                DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+                socket.receive(packet);
+                handle(packet);
+            }
 
-            } else if(uploadDownload.equalsIgnoreCase("d")) {
-                System.out.println("Enter file to download: ");
-                String fileName = stdin.nextLine();
-                RWPacket rrq = new RWPacket(OPCODES.RRQ, fileName);
-                socket.send(rrq.getDataGramPacket(InetAddress.getLocalHost(), port));
-                while (Shared.getWork()) {
-                    DatagramPacket packet = new DatagramPacket(new byte[516], 516);
-                    socket.receive(packet);
-                    handle(packet);
-                }
+        } else if (uploadDownload.equalsIgnoreCase("d")) {
+            RWPacket rrq = new RWPacket(OPCODES.RRQ, fileName);
+            socket.send(rrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+            while (Shared.getWork()) {
+                DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+                socket.receive(packet);
+                handle(packet);
             }
         }
 
@@ -128,21 +130,21 @@ public class Client {
         System.out.println(Arrays.toString(xor.getKey()));
     }
 
-    public void handle(DatagramPacket packet){
+    public void handle(DatagramPacket packet) {
         byte[] bytes = packet.getData();
         Packet.encryptDecrypt(bytes);
         int dataLength = packet.getLength();
         bytes = Arrays.copyOfRange(bytes, 0, dataLength);
         Packet.encryptDecrypt(bytes);
         short opCode = ByteBuffer.wrap(bytes).getShort();
-        if(bytes.length > 0) {
+        if (bytes.length > 0) {
             if (opCode == RRQ) {
                 handleRRQ(bytes);
             } else if (opCode == WRQ) {
                 handleWRQ(bytes);
             } else if (opCode == DATA) {
                 try {
-                    handleDATA(bytes);
+                    handleDATA(packet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -163,11 +165,11 @@ public class Client {
         }
     }
 
-    public void handleRRQ(byte[] bytes){
+    public void handleRRQ(byte[] bytes) {
         RWPacket rrq = new RWPacket(bytes);
         String fileName = rrq.getFileName();
         File fileToUpload = new File(fileName);
-        if(!fileToUpload.exists()){
+        if (!fileToUpload.exists()) {
             ErrorPacket fileNotFound = new ErrorPacket(FILENOTFOUND);
             DatagramPacket errorPacket = fileNotFound.getDataGramPacket(destination, port);
             try {
@@ -182,7 +184,7 @@ public class Client {
         sendData(fileName);
     }
 
-    public void sendData(String file){
+    public void sendData(String file) {
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
         try {
@@ -191,9 +193,9 @@ public class Client {
             System.err.println("Problem building data");
             e.printStackTrace();
         }
-        for(int i = 0; i < dataPackets.size(); ++i){
+        for (int i = 0; i < dataPackets.size(); ++i) {
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, destination, socket, port);
+            PacketThread packetThread = new PacketThread(lock, sem, dataPackets.get(i), blockNum, destination, socket, port);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -230,10 +232,10 @@ public class Client {
     }
 
 
-    public void handleWRQ(byte[] bytes){
+    public void handleWRQ(byte[] bytes) {
         RWPacket wrq = new RWPacket(bytes);
         File fileToDownload = new File(wrq.getFileName());
-        if(fileToDownload.exists()){
+        if (fileToDownload.exists()) {
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
             DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(destination, port);
             try {
@@ -253,15 +255,19 @@ public class Client {
         }
     }
 
-    public void handleDATA(byte[] bytes) throws IOException {
+    public void handleDATA(DatagramPacket packet) throws IOException {
+        //DatagramSocket newSocket = new DatagramSocket(packet.getPort(), InetAddress.getLocalHost());
+        byte[] bytes = packet.getData();
+        Packet.encryptDecrypt(bytes);
         DataPacket data = new DataPacket(bytes);
         short blockNum = data.getBlockNum();
         byte[] packetData = data.getData();
 
-        if(downloadData.get(blockNum).length == 0) {
+        //If the byte[] at the given position in the downloaded data has length 0, add the block of data to downloadData
+        if (downloadData.get(blockNum).length == 0) {
             downloadData.add(blockNum, packetData);
             ACKPacket ack = new ACKPacket(blockNum);
-            DatagramPacket ackPacket = ack.getDataGramPacket(destination, port);
+            DatagramPacket ackPacket = ack.getDataGramPacket(packet.getAddress(), packet.getPort());
             try {
                 socket.send(ackPacket);
             } catch (IOException e) {
@@ -269,11 +275,11 @@ public class Client {
                 e.printStackTrace();
             }
         }
-        if(packetData.length < 512){
+        if (packetData.length < 512) {
             File download = new File(System.getProperty("user.home") + "/Desktop" + "/download");
             download.createNewFile();
             FileOutputStream fos = new FileOutputStream(download, true);
-            for(byte[] block : downloadData){
+            for (byte[] block : downloadData) {
                 fos.write(block);
             }
             fos.close();
@@ -281,19 +287,19 @@ public class Client {
         }
     }
 
-    public void handleACK(byte[] bytes){
+    public void handleACK(byte[] bytes) {
         ACKPacket ack = new ACKPacket(bytes);
         System.out.println("Received ACK for block: " + ack.getBlockNum());
     }
 
-    public void handleError(byte[] bytes){
+    public void handleError(byte[] bytes) {
         ErrorPacket errorPacket = new ErrorPacket(bytes);
         System.out.println(errorPacket.getErrorMessage());
         Shared.setWork(false);
     }
 
-    void setDownloadData(){
-        for(int i = 0; i < 100; ++i){
+    void setDownloadData() {
+        for (int i = 0; i < 100; ++i) {
             downloadData.add(i, new byte[0]);
         }
     }

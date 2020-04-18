@@ -13,10 +13,7 @@ public interface Data {
     int MAX_SIZE = 512;
 
     static ArrayList<DatagramPacket> buildDataPackets(String fileName, InetAddress host, int port) throws IOException {
-
-
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
-
         BufferedInputStream fileStream = new BufferedInputStream(new FileInputStream(fileName));
         int bytesRead = 0;
         short blockNum = 0;
