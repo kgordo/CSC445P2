@@ -217,8 +217,11 @@ public class Server {
         }
     }
 
-    public void handleDATA(DatagramPacket datagramPacket) throws IOException {
-        DataPacket data = new DataPacket(datagramPacket.getData());
+    public void handleDATA(DatagramPacket packet) throws IOException {
+        int dataLength = packet.getLength();
+        byte[] bytes = Arrays.copyOfRange(packet.getData(), 0, dataLength);
+        Packet.encryptDecrypt(bytes);
+        DataPacket data = new DataPacket(bytes);
         short blockNum = data.getBlockNum();
         byte[] packetData = data.getData();
 
