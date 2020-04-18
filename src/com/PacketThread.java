@@ -54,11 +54,9 @@ class PacketThread extends Thread {
         //the ack that the threads are looking for is their own thread number
         System.out.println("Thread" + blockNum + " Is looking for ACK: " + blockIndex);
         try {
-            System.out.println("1" + this.isAlive());
             try {
                 //once thread is run it gets a permit
                 sem.acquire();
-                System.out.println("2" + this.isAlive());
                 //received used to break thread out of a loop
                 //DatagramPacket dp = new DatagramPacket(data, data.length, destination, port);
                 try {
@@ -66,7 +64,6 @@ class PacketThread extends Thread {
                     socket.send(dataPacket);
                     lock.unlock();
                     start = System.currentTimeMillis();
-                    System.out.println("3" + this.isAlive());
                     Thread.sleep(100);
                     //send packet
                 } catch (IOException e) {
@@ -74,17 +71,12 @@ class PacketThread extends Thread {
                     e.printStackTrace();
                 }
                 boolean notReceived = true;
-                System.out.println("4" + this.isAlive());
                 while (notReceived) {
-                    System.out.println("5" + this.isAlive());
                     DatagramPacket ackReceived = new DatagramPacket(new byte[ACKPacket.ACKSIZE], ACKPacket.ACKSIZE);
                     lock.lock();
                     socket.receive(ackReceived);
                     lock.unlock();
-                    System.out.println("6" + this.isAlive());
-                    System.out.println("Tries to receive packet");
                     if (ackReceived != null) {
-                        System.out.println("Really does receive");
                         double end = System.currentTimeMillis();
                         double rtt = Math.abs(end - start);
                         timeout = Timeout.calculate(rtt);
@@ -102,7 +94,6 @@ class PacketThread extends Thread {
                         notReceived = false;
                         System.out.println("Received ACK for " + ack.getBlockNum());
                     } else {
-                        System.out.println("Nothing received yet");
                         try {
                             socket.send(dataPacket);
                             //retries if it hasn't been received
@@ -118,8 +109,6 @@ class PacketThread extends Thread {
                 e.printStackTrace();
             }
         } finally {
-            System.out.println("gets here");
-
             try {
                 socket.setSoTimeout((int)timeout);
             } catch (SocketException e) {

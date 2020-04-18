@@ -32,7 +32,7 @@ public class Server {
     //int port = 2850;
     int port;
     int clientPort;
-    static final int WINDOWSIZE = 7;
+    static final int WINDOWSIZE = 5;
 
 
     public void start() throws IOException {
@@ -189,7 +189,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
-        System.out.println("Somehow escapes ");
+        System.out.println("Really finishes sending data");
         sem.release(WINDOWSIZE);
     }
 

@@ -256,8 +256,8 @@ public class Client {
     }
 
     public void handleDATA(DatagramPacket packet) throws IOException {
-        //DatagramSocket newSocket = new DatagramSocket(packet.getPort(), InetAddress.getLocalHost());
-        byte[] bytes = packet.getData();
+        int dataLength = packet.getLength();
+        byte[] bytes = Arrays.copyOfRange(packet.getData(), 0, dataLength);
         Packet.encryptDecrypt(bytes);
         DataPacket data = new DataPacket(bytes);
         short blockNum = data.getBlockNum();
