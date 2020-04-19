@@ -32,6 +32,7 @@ public class Server {
     int clientPort;
     static final int WINDOWSIZE = 5;
     static final int MAXDATASIZE = 512;
+    static final int MAXPACKETSIZE = 516;
 
 
     public void start() throws IOException {
@@ -44,12 +45,18 @@ public class Server {
         System.out.println("IPv6? (Y/N):");
         String format = stdin.nextLine();
 
+        if (format.equalsIgnoreCase("y")) {
+            System.setProperty("java.net.preferIPv4Stack", "false");
+        } else if (format.equalsIgnoreCase("n")) {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+        }
+
         setUploadData();
         sem = new Semaphore(WINDOWSIZE);
         socket = new DatagramSocket(port);
         handshake();
         while(true) {
-            DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+            DatagramPacket packet = new DatagramPacket(new byte[MAXPACKETSIZE], MAXPACKETSIZE);
             socket.receive(packet);
             handle(packet);
         }
@@ -119,6 +126,7 @@ public class Server {
     }
 
     public void handleRRQ(DatagramPacket packet){
+        System.out.println("Receives RRQ from Client");
         Shared.setWork(true);
         byte[] bytes = packet.getData();
         RWPacket rrq = new RWPacket(bytes);
@@ -144,7 +152,8 @@ public class Server {
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
         try {
-            threadSocket = new DatagramSocket(0, clientAddress);
+            //threadSocket = new DatagramSocket(0, clientAddress);
+            threadSocket = new DatagramSocket(0);
         } catch (SocketException e) {
             System.err.println("Problem instantiating packetThread socket");
             e.printStackTrace();
@@ -168,8 +177,6 @@ public class Server {
         //queue used to organize execute order
         while (right < queueSize && !threads.isEmpty()) {
             //functions until all threads have been started
-            System.out.println("Permits available? " + (sem.availablePermits()>0));
-            System.out.println("Get Left: " + Shared.getLeft());
             if ((right - Shared.getLeft() < WINDOWSIZE) && sem.availablePermits() > 0) {
                 //checks to see if there are permits available and that the
                 //window size is not broken from left-most ack

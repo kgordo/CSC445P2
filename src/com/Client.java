@@ -17,16 +17,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
 import static com.Server.MAXDATASIZE;
+import static com.Server.MAXPACKETSIZE;
 
 public class Client {
     ReentrantLock lock = new ReentrantLock();
-    //String address = "cs.oswego.edu";
     static final int WINDOWSIZE = 5;
     private static final byte ZEROBYTE = 0;
     Semaphore sem;
-    String address = "localhost";
+    String address;
     ArrayList<byte[]> downloadData = new ArrayList<>(100);
-    InetAddress destination;
+    InetAddress serverAddress;
     int port;
     DatagramSocket socket;
     DatagramSocket threadSocket;
@@ -50,6 +50,10 @@ public class Client {
         } else if (format.equalsIgnoreCase("n")) {
             System.setProperty("java.net.preferIPv4Stack", "true");
         }
+
+        //Get server address
+        System.out.println("Please enter Server IP: ");
+        address = stdin.nextLine();
 
         //TODO: Doesn't actually do anything yet
         //Set drop preference
@@ -75,16 +79,17 @@ public class Client {
 
         if (uploadDownload.equalsIgnoreCase("u")) {
             RWPacket wrq = new RWPacket(OPCODES.WRQ, fileName);
-            socket.send(wrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+            socket.send(wrq.getDataGramPacket(serverAddress, port));
+            System.out.printf("SENDS RRQ to server");
             while (Shared.getWork()) {
-                DatagramPacket packet = new DatagramPacket(new byte[516], 516);
+                DatagramPacket packet = new DatagramPacket(new byte[MAXPACKETSIZE], MAXPACKETSIZE);
                 socket.receive(packet);
                 handle(packet);
             }
 
         } else if (uploadDownload.equalsIgnoreCase("d")) {
             RWPacket rrq = new RWPacket(OPCODES.RRQ, fileName);
-            socket.send(rrq.getDataGramPacket(InetAddress.getLocalHost(), port));
+            socket.send(rrq.getDataGramPacket(serverAddress, port));
             while (Shared.getWork()) {
                 DatagramPacket packet = new DatagramPacket(new byte[516], 516);
                 socket.receive(packet);
@@ -103,12 +108,12 @@ public class Client {
             e.printStackTrace();
         }
         try {
-            destination = InetAddress.getByName(address);
+            serverAddress = InetAddress.getByName(address);
         } catch (UnknownHostException e) {
             System.err.println("Problem initializing host");
             e.printStackTrace();
         }
-        DatagramPacket clientKey = new DatagramPacket(xor.getKey(), xor.getKey().length, destination, port);
+        DatagramPacket clientKey = new DatagramPacket(xor.getKey(), xor.getKey().length, serverAddress, port);
         try {
             socket.send(clientKey);
         } catch (IOException e) {
@@ -153,7 +158,7 @@ public class Client {
                 handleError(bytes);
             } else {
                 ErrorPacket badOpcode = new ErrorPacket(UNDEFINED);
-                DatagramPacket errorPacket = badOpcode.getDataGramPacket(destination, port);
+                DatagramPacket errorPacket = badOpcode.getDataGramPacket(serverAddress, port);
                 try {
                     socket.send(errorPacket);
                 } catch (IOException e) {
@@ -170,7 +175,7 @@ public class Client {
         File fileToUpload = new File(fileName);
         if (!fileToUpload.exists()) {
             ErrorPacket fileNotFound = new ErrorPacket(FILENOTFOUND);
-            DatagramPacket errorPacket = fileNotFound.getDataGramPacket(destination, port);
+            DatagramPacket errorPacket = fileNotFound.getDataGramPacket(serverAddress, port);
             try {
                 socket.send(errorPacket);
             } catch (IOException e) {
@@ -188,20 +193,20 @@ public class Client {
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
         try {
-            threadSocket = new DatagramSocket(0, destination);
+            threadSocket = new DatagramSocket(0);
         } catch (SocketException e) {
             System.err.println("Problem instantiating packetThread socket");
             e.printStackTrace();
         }
         try {
-            dataPackets = Data.buildDataPackets(file, destination, port);
+            dataPackets = Data.buildDataPackets(file, serverAddress, port);
         } catch (IOException e) {
             System.err.println("Problem building data");
             e.printStackTrace();
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, destination, threadSocket, port);
+            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, serverAddress, threadSocket, port);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -239,7 +244,7 @@ public class Client {
         File fileToDownload = new File(wrq.getFileName());
         if (fileToDownload.exists()) {
             ErrorPacket fileAlreadyExists = new ErrorPacket(FILEEXISTS);
-            DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(destination, port);
+            DatagramPacket errorPacket = fileAlreadyExists.getDataGramPacket(serverAddress, port);
             try {
                 socket.send(errorPacket);
             } catch (IOException e) {
@@ -250,7 +255,7 @@ public class Client {
         }
         RWPacket rrq = new RWPacket(RRQ, wrq.getFileName());
         try {
-            socket.send(rrq.getDataGramPacket(destination, port));
+            socket.send(rrq.getDataGramPacket(serverAddress, port));
         } catch (IOException e) {
             System.err.println("Problem sending RRQ to client");
             e.printStackTrace();

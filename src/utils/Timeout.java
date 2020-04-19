@@ -11,7 +11,7 @@ public class Timeout {
     private static double devRTT = 100;
     private static double timeout = 0;
 
-    public static final int MAXTIMEOUT = Integer.MAX_VALUE;
+    public static final int MAXTIMEOUT = 2000;
 
     public static double calculate(double sampleRTT){
         estRTT = (1-ALPHA) * estRTT + (ALPHA*sampleRTT);

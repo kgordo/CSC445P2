@@ -9,6 +9,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static utils.Timeout.MAXTIMEOUT;
+
 class PacketThread extends Thread {
     Semaphore sem;
     short blockNum;
@@ -67,7 +69,11 @@ class PacketThread extends Thread {
                 while (notReceived) {
                     DatagramPacket ackReceived = new DatagramPacket(new byte[ACKPacket.ACKSIZE], ACKPacket.ACKSIZE);
                     //lock.lock();
-                    socket.receive(ackReceived);
+                    try {
+                        socket.receive(ackReceived);
+                    }catch (SocketTimeoutException e){
+                        socket.setSoTimeout(MAXTIMEOUT);
+                    }
                     //lock.unlock();
                     if (ackReceived != null) {
                         double end = System.currentTimeMillis();
