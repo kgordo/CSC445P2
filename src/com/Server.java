@@ -236,7 +236,7 @@ public class Server {
             try {
                 socket.send(ackPacket);
             } catch (IOException e) {
-                System.err.println("Problem sending ACK to server");
+                System.err.println("Problem sending ACK to client");
                 e.printStackTrace();
             }
         }
@@ -249,6 +249,7 @@ public class Server {
             }
             fos.close();
             Shared.setWork(false);
+            System.out.println("File successfully uploaded.");
         }
     }
 

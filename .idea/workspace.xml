@@ -29,11 +29,8 @@
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/Client.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/Client.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/PacketThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/PacketThread.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/Server.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/utils/Timeout.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/utils/Timeout.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/PacketThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/PacketThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/Timeout.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/Timeout.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -210,10 +207,10 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state width="1807" height="46" key="GridCell.Tab.0.right/67.27.1853.1053@67.27.1853.1053" timestamp="1587316033910" />
-    <state x="476" y="130" width="1024" height="845" key="SettingsEditor" timestamp="1587316849561">
+    <state x="609" y="150" width="1024" height="845" key="SettingsEditor" timestamp="1587318812477">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="476" y="130" width="1024" height="845" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1587316849561" />
+    <state x="609" y="150" width="1024" height="845" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1587318812477" />
     <state x="67" y="284" width="1372" height="796" key="new project wizard" timestamp="1586887376019">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>

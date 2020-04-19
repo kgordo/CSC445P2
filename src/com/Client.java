@@ -193,6 +193,7 @@ public class Client {
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
         try {
+            //threadSocket = new DatagramSocket(0, clientAddress);
             threadSocket = new DatagramSocket(0);
         } catch (SocketException e) {
             System.err.println("Problem instantiating packetThread socket");
@@ -217,8 +218,6 @@ public class Client {
         //queue used to organize execute order
         while (right < queueSize && !threads.isEmpty()) {
             //functions until all threads have been started
-            System.out.println("Permits available? " + (sem.availablePermits()>0));
-            System.out.println("Get Left: " + Shared.getLeft());
             if ((right - Shared.getLeft() < WINDOWSIZE) && sem.availablePermits() > 0) {
                 //checks to see if there are permits available and that the
                 //window size is not broken from left-most ack
@@ -236,6 +235,7 @@ public class Client {
             }
         }
         sem.release(WINDOWSIZE);
+        Shared.setWork(false);
     }
 
 
