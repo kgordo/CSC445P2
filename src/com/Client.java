@@ -6,7 +6,6 @@ import utils.Data;
 import utils.XOR;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.*;
@@ -17,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
-import static utils.Timeout.MAXTIMEOUT;
+import static com.Server.MAXDATASIZE;
 
 public class Client {
     ReentrantLock lock = new ReentrantLock();
@@ -185,17 +184,24 @@ public class Client {
     }
 
     public void sendData(String file) {
+        Shared.setWork(true);
         ArrayList<DatagramPacket> dataPackets = new ArrayList<>();
         Queue<PacketThread> threads = new LinkedList<>();
+        try {
+            threadSocket = new DatagramSocket(0, destination);
+        } catch (SocketException e) {
+            System.err.println("Problem instantiating packetThread socket");
+            e.printStackTrace();
+        }
         try {
             dataPackets = Data.buildDataPackets(file, destination, port);
         } catch (IOException e) {
             System.err.println("Problem building data");
             e.printStackTrace();
         }
-        for (int i = 0; i < dataPackets.size(); ++i) {
+        for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(lock, sem, dataPackets.get(i), blockNum, destination, socket, port);
+            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, destination, threadSocket, port);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -204,13 +210,19 @@ public class Client {
         //last thread run
         int queueSize = threads.size();
         //queue used to organize execute order
-        while (right < queueSize) {
+        while (right < queueSize && !threads.isEmpty()) {
             //functions until all threads have been started
+            System.out.println("Permits available? " + (sem.availablePermits()>0));
+            System.out.println("Get Left: " + Shared.getLeft());
             if ((right - Shared.getLeft() < WINDOWSIZE) && sem.availablePermits() > 0) {
                 //checks to see if there are permits available and that the
                 //window size is not broken from left-most ack
                 threads.remove().start();
                 right++;
+                //Start window over once we've reached it
+                if(right == WINDOWSIZE){
+                    right = 0;
+                }
             }
             try {
                 Thread.sleep(1);
@@ -218,17 +230,7 @@ public class Client {
                 e.printStackTrace();
             }
         }
-        while (Shared.getLeft() != right) {
-            //waits for all acks to be received
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        //stops random numbers by setting flag
-        //Shared.setWork(false);
-        threads.stream().forEach(PacketThread::interrupt);
+        sem.release(WINDOWSIZE);
     }
 
 
@@ -275,7 +277,7 @@ public class Client {
                 e.printStackTrace();
             }
         }
-        if (packetData.length < 512) {
+        if (packetData.length < MAXDATASIZE) {
             File download = new File(System.getProperty("user.home") + "/Desktop" + "/download");
             download.createNewFile();
             FileOutputStream fos = new FileOutputStream(download, true);

@@ -20,7 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
-import static utils.Timeout.MAXTIMEOUT;
 
 public class Server {
     ReentrantLock lock = new ReentrantLock();
@@ -29,10 +28,10 @@ public class Server {
     DatagramSocket socket;
     DatagramSocket threadSocket;
     InetAddress clientAddress;
-    //int port = 2850;
     int port;
     int clientPort;
     static final int WINDOWSIZE = 5;
+    static final int MAXDATASIZE = 512;
 
 
     public void start() throws IOException {
@@ -167,13 +166,19 @@ public class Server {
         //last thread run
         int queueSize = threads.size();
         //queue used to organize execute order
-        while (right < queueSize) {
+        while (right < queueSize && !threads.isEmpty()) {
             //functions until all threads have been started
+            System.out.println("Permits available? " + (sem.availablePermits()>0));
+            System.out.println("Get Left: " + Shared.getLeft());
             if ((right - Shared.getLeft() < WINDOWSIZE) && sem.availablePermits() > 0) {
                 //checks to see if there are permits available and that the
                 //window size is not broken from left-most ack
                 threads.remove().start();
                 right++;
+                //Start window over once we've reached it
+                if(right == WINDOWSIZE){
+                    right = 0;
+                }
             }
             try {
                 Thread.sleep(1);
@@ -181,15 +186,6 @@ public class Server {
                 e.printStackTrace();
             }
         }
-        while (Shared.getLeft() != right) {
-            //waits for all acks to be received
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println("Really finishes sending data");
         sem.release(WINDOWSIZE);
     }
 
@@ -225,22 +221,23 @@ public class Server {
         short blockNum = data.getBlockNum();
         byte[] packetData = data.getData();
 
-        if(uploadData.get(blockNum).length == 0) {
+        //If the byte[] at the given position in the downloaded data has length 0, add the block of data to downloadData
+        if (uploadData.get(blockNum).length == 0) {
             uploadData.add(blockNum, packetData);
             ACKPacket ack = new ACKPacket(blockNum);
-            DatagramPacket ackPacket = ack.getDataGramPacket(clientAddress, clientPort);
+            DatagramPacket ackPacket = ack.getDataGramPacket(packet.getAddress(), packet.getPort());
             try {
                 socket.send(ackPacket);
             } catch (IOException e) {
-                System.err.println("Problem sending ACK to client");
+                System.err.println("Problem sending ACK to server");
                 e.printStackTrace();
             }
         }
-        if(packetData.length < 512){
-            File download = new File(System.getProperty("user.home") + "/Desktop" + "/upload");
+        if (packetData.length < MAXDATASIZE) {
+            File download = new File(System.getProperty("user.home") + "/Desktop" + "/download");
             download.createNewFile();
             FileOutputStream fos = new FileOutputStream(download, true);
-            for(byte[] block : uploadData){
+            for (byte[] block : uploadData) {
                 fos.write(block);
             }
             fos.close();

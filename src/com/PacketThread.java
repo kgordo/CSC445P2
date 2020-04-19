@@ -1,15 +1,12 @@
 package com;
 
 import packets.ACKPacket;
-import packets.DataPacket;
-import packets.Packet;
 import utils.Timeout;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 class PacketThread extends Thread {
@@ -58,14 +55,10 @@ class PacketThread extends Thread {
                 //once thread is run it gets a permit
                 sem.acquire();
                 //received used to break thread out of a loop
-                //DatagramPacket dp = new DatagramPacket(data, data.length, destination, port);
                 try {
-                    lock.lock();
-                    socket.send(dataPacket);
-                    lock.unlock();
-                    start = System.currentTimeMillis();
-                    Thread.sleep(100);
                     //send packet
+                    socket.send(dataPacket);
+                    start = System.currentTimeMillis();
                 } catch (IOException e) {
                     System.err.println("Problem sending data");
                     e.printStackTrace();
@@ -73,9 +66,9 @@ class PacketThread extends Thread {
                 boolean notReceived = true;
                 while (notReceived) {
                     DatagramPacket ackReceived = new DatagramPacket(new byte[ACKPacket.ACKSIZE], ACKPacket.ACKSIZE);
-                    lock.lock();
+                    //lock.lock();
                     socket.receive(ackReceived);
-                    lock.unlock();
+                    //lock.unlock();
                     if (ackReceived != null) {
                         double end = System.currentTimeMillis();
                         double rtt = Math.abs(end - start);
