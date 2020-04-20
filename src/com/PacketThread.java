@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static utils.Timeout.MAXTIMEOUT;
 
@@ -24,10 +23,8 @@ class PacketThread extends Thread {
     double timeout = 2000;
     double start;
     private volatile boolean exit = false;
-    ReentrantLock lock;
 
-    public PacketThread(ReentrantLock lock, Semaphore sem, DatagramPacket dp, short blockNum, InetAddress destination, DatagramSocket socket, int port) {
-        this.lock = lock;
+    public PacketThread(Semaphore sem, DatagramPacket dp, short blockNum, InetAddress destination, DatagramSocket socket, int port) {
         this.sem = sem;
         this.blockNum = blockNum;
         this.blockIndex = blockNum;

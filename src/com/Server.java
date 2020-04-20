@@ -22,7 +22,6 @@ import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
 
 public class Server {
-    ReentrantLock lock = new ReentrantLock();
     Semaphore sem;
     ArrayList<byte[]> uploadData = new ArrayList<>(100);
     DatagramSocket socket;
@@ -166,7 +165,7 @@ public class Server {
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, clientAddress, threadSocket, clientPort);
+            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, clientAddress, threadSocket, clientPort);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());

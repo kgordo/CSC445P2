@@ -12,7 +12,6 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static codes.ERRORCODES.*;
 import static codes.OPCODES.*;
@@ -20,7 +19,6 @@ import static com.Server.MAXDATASIZE;
 import static com.Server.MAXPACKETSIZE;
 
 public class Client {
-    ReentrantLock lock = new ReentrantLock();
     static final int WINDOWSIZE = 5;
     private static final byte ZEROBYTE = 0;
     Semaphore sem;
@@ -80,7 +78,6 @@ public class Client {
         if (uploadDownload.equalsIgnoreCase("u")) {
             RWPacket wrq = new RWPacket(OPCODES.WRQ, fileName);
             socket.send(wrq.getDataGramPacket(serverAddress, port));
-            System.out.printf("SENDS RRQ to server");
             while (Shared.getWork()) {
                 DatagramPacket packet = new DatagramPacket(new byte[MAXPACKETSIZE], MAXPACKETSIZE);
                 socket.receive(packet);
@@ -207,7 +204,7 @@ public class Client {
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(lock,sem, dataPackets.get(i), blockNum, serverAddress, threadSocket, port);
+            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, serverAddress, threadSocket, port);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
