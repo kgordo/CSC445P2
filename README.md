@@ -25,8 +25,6 @@ We use the Exponentially Weighted Moving Average (EWMA) to calculate socket time
 
 ![...](G4.svg)
 
-![...](G4.svg)
-
 ![...](G5.svg)
 
 ![...](G6.svg)
