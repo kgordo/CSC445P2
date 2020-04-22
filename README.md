@@ -17,7 +17,7 @@ their permits upon receival of an ACK. The sliding window moves (packetThreads a
 We use the Exponentially Weighted Moving Average (EWMA) to calculate socket timeout values. 
 
 
-#Graphs
+# Graphs
 
 ![...](1.png)
 
