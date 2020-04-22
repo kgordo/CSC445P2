@@ -6,7 +6,9 @@ import utils.Timeout;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static utils.Timeout.MAXTIMEOUT;
 
@@ -22,9 +24,11 @@ class PacketThread extends Thread {
     DatagramPacket dataPacket;
     double timeout = 2000;
     double start;
+    boolean drop;
     private volatile boolean exit = false;
+    ReentrantLock lock = new ReentrantLock();
 
-    public PacketThread(Semaphore sem, DatagramPacket dp, short blockNum, InetAddress destination, DatagramSocket socket, int port) {
+    public PacketThread(Semaphore sem, DatagramPacket dp, short blockNum, InetAddress destination, DatagramSocket socket, int port, boolean drop) {
         this.sem = sem;
         this.blockNum = blockNum;
         this.blockIndex = blockNum;
@@ -33,6 +37,7 @@ class PacketThread extends Thread {
         this.data = buffer.array();
         this.port = port;
         this.socket = socket;
+        this.drop = drop;
 
         try {
             //this.socket = new DatagramSocket(0, destination);
@@ -56,8 +61,8 @@ class PacketThread extends Thread {
                 //received used to break thread out of a loop
                 try {
                     //send packet
-                    socket.send(dataPacket);
                     start = System.currentTimeMillis();
+                    socket.send(dataPacket);
                 } catch (IOException e) {
                     System.err.println("Problem sending data");
                     e.printStackTrace();
@@ -65,18 +70,28 @@ class PacketThread extends Thread {
                 boolean notReceived = true;
                 while (notReceived) {
                     DatagramPacket ackReceived = new DatagramPacket(new byte[ACKPacket.ACKSIZE], ACKPacket.ACKSIZE);
-                    //lock.lock();
+
                     try {
-                        socket.receive(ackReceived);
+                        if(!drop) {
+                            socket.receive(ackReceived);
+                        } else {
+                            Random r = new Random();
+                            if(r.nextInt(100) < 90){
+                                socket.receive(ackReceived);
+                            }
+                        }
                     }catch (SocketTimeoutException e){
                         socket.setSoTimeout(MAXTIMEOUT);
+                        socket.send(dataPacket);
                     }
-                    //lock.unlock();
+
                     if (ackReceived != null) {
                         double end = System.currentTimeMillis();
                         double rtt = Math.abs(end - start);
                         timeout = Timeout.calculate(rtt);
-
+                        lock.lock();
+                        Shared.updateAverage(rtt);
+                        lock.unlock();
                         try {
                             socket.setSoTimeout((int)timeout);
                         } catch (SocketException e) {

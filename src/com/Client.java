@@ -19,7 +19,7 @@ import static com.Server.MAXDATASIZE;
 import static com.Server.MAXPACKETSIZE;
 
 public class Client {
-    static final int WINDOWSIZE = 5;
+    static int WINDOWSIZE = 7;
     private static final byte ZEROBYTE = 0;
     Semaphore sem;
     String address;
@@ -29,12 +29,12 @@ public class Client {
     DatagramSocket socket;
     DatagramSocket threadSocket;
     String fileName;
+    boolean dropPackets;
 
     public void start() throws IOException, InterruptedException {
         setDownloadData();
         sem = new Semaphore(WINDOWSIZE);
         Scanner stdin = new Scanner(System.in);
-        boolean dropPackets;
 
         System.out.println("Enter port:");
         port = Integer.parseInt(stdin.nextLine());
@@ -53,7 +53,6 @@ public class Client {
         System.out.println("Please enter Server IP: ");
         address = stdin.nextLine();
 
-        //TODO: Doesn't actually do anything yet
         //Set drop preference
         System.out.println("Drop 1% of packets (Y/N):");
         String drop = stdin.nextLine();
@@ -63,6 +62,11 @@ public class Client {
         } else if (drop.equalsIgnoreCase("n")) {
             dropPackets = false;
         }
+
+        //Get window size
+        System.out.println("Please enter desired window size");
+        WINDOWSIZE = Integer.parseInt(stdin.nextLine());
+
         System.out.println("Upload or Download (U/D):");
         String uploadDownload = stdin.nextLine();
         if (uploadDownload.equalsIgnoreCase("u")) {
@@ -204,7 +208,7 @@ public class Client {
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, serverAddress, threadSocket, port);
+            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, serverAddress, threadSocket, port, dropPackets);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -233,6 +237,7 @@ public class Client {
         }
         sem.release(WINDOWSIZE);
         Shared.setWork(false);
+        System.out.println("Average Throughput in ms: "+ ((WINDOWSIZE * MAXPACKETSIZE)/Shared.getAverage(dataPackets.size())));
     }
 
 

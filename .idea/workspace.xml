@@ -29,9 +29,11 @@
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/Client.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/Client.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/PacketThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/PacketThread.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/Server.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/CSC445P2/com/Shared.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CSC445P2/com/Shared.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/PacketThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/PacketThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/Shared.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/Shared.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,13 +59,14 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/com" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/out" />
     <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/out" />
       <recent name="$PROJECT_DIR$/src/com" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/src" />
@@ -73,6 +76,8 @@
       <recent name="com" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/out" />
+      <recent name="$PROJECT_DIR$/out/artifacts/CSC445P2_jar" />
       <recent name="$PROJECT_DIR$/src/com" />
       <recent name="$PROJECT_DIR$/src" />
       <recent name="$PROJECT_DIR$" />
@@ -192,29 +197,33 @@
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="776" y="310" width="424" height="484" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1586570394622" />
-    <state width="1807" height="46" key="GridCell.Tab.0.bottom" timestamp="1587348185590">
+    <state width="1807" height="541" key="GridCell.Tab.0.bottom" timestamp="1587389699295">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state width="1807" height="46" key="GridCell.Tab.0.bottom/67.27.1853.1053@67.27.1853.1053" timestamp="1587348185590" />
-    <state width="1807" height="46" key="GridCell.Tab.0.center" timestamp="1587348185590">
+    <state width="1807" height="541" key="GridCell.Tab.0.bottom/67.27.1853.1053@67.27.1853.1053" timestamp="1587389699295" />
+    <state width="1807" height="541" key="GridCell.Tab.0.center" timestamp="1587389699293">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state width="1807" height="46" key="GridCell.Tab.0.center/67.27.1853.1053@67.27.1853.1053" timestamp="1587348185590" />
-    <state width="1807" height="46" key="GridCell.Tab.0.left" timestamp="1587348185590">
+    <state width="1807" height="541" key="GridCell.Tab.0.center/67.27.1853.1053@67.27.1853.1053" timestamp="1587389699293" />
+    <state width="1807" height="541" key="GridCell.Tab.0.left" timestamp="1587389699291">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state width="1807" height="46" key="GridCell.Tab.0.left/67.27.1853.1053@67.27.1853.1053" timestamp="1587348185590" />
-    <state width="1807" height="46" key="GridCell.Tab.0.right" timestamp="1587348185590">
+    <state width="1807" height="541" key="GridCell.Tab.0.left/67.27.1853.1053@67.27.1853.1053" timestamp="1587389699291" />
+    <state width="1807" height="541" key="GridCell.Tab.0.right" timestamp="1587389699294">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state width="1807" height="46" key="GridCell.Tab.0.right/67.27.1853.1053@67.27.1853.1053" timestamp="1587348185590" />
-    <state x="609" y="150" width="1024" height="845" key="SettingsEditor" timestamp="1587348361079">
+    <state width="1807" height="541" key="GridCell.Tab.0.right/67.27.1853.1053@67.27.1853.1053" timestamp="1587389699294" />
+    <state x="856" y="150" width="1024" height="845" key="SettingsEditor" timestamp="1587579452897">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="609" y="150" width="1024" height="845" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1587348361079" />
+    <state x="856" y="150" width="1024" height="845" key="SettingsEditor/67.27.1853.1053@67.27.1853.1053" timestamp="1587579452897" />
     <state x="67" y="284" width="1372" height="796" key="new project wizard" timestamp="1586887376019">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
     <state x="67" y="284" width="1372" height="796" key="new project wizard/67.27.1853.1053@67.27.1853.1053" timestamp="1586887376019" />
+    <state x="656" y="257" width="672" height="678" key="search.everywhere.popup" timestamp="1587578494506">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="656" y="257" width="672" height="678" key="search.everywhere.popup/67.27.1853.1053@67.27.1853.1053" timestamp="1587578494506" />
   </component>
 </project>

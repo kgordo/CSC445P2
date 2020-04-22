@@ -29,9 +29,10 @@ public class Server {
     InetAddress clientAddress;
     int port;
     int clientPort;
-    static final int WINDOWSIZE = 5;
+    static int WINDOWSIZE = 7;
     static final int MAXDATASIZE = 512;
     static final int MAXPACKETSIZE = 516;
+    boolean dropPackets;
 
 
     public void start() throws IOException {
@@ -49,6 +50,20 @@ public class Server {
         } else if (format.equalsIgnoreCase("n")) {
             System.setProperty("java.net.preferIPv4Stack", "true");
         }
+
+        //Set drop preference
+        System.out.println("Drop 1% of packets (Y/N):");
+        String drop = stdin.nextLine();
+
+        if (drop.equalsIgnoreCase("y")) {
+            dropPackets = true;
+        } else if (drop.equalsIgnoreCase("n")) {
+            dropPackets = false;
+        }
+
+        //Get window size
+        System.out.println("Please enter desired window size");
+        WINDOWSIZE = Integer.parseInt(stdin.nextLine());
 
         setUploadData();
         sem = new Semaphore(WINDOWSIZE);
@@ -165,7 +180,7 @@ public class Server {
         }
         for(int i = 0; i < dataPackets.size(); ++i){
             short blockNum = (short) i;
-            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, clientAddress, threadSocket, clientPort);
+            PacketThread packetThread = new PacketThread(sem, dataPackets.get(i), blockNum, clientAddress, threadSocket, clientPort, dropPackets);
             threads.add(packetThread);
         }
         Shared.setAcks(threads.size());
@@ -193,6 +208,7 @@ public class Server {
             }
         }
         sem.release(WINDOWSIZE);
+        System.out.println("Average Throughput in ms: "+ ((WINDOWSIZE * MAXPACKETSIZE)/Shared.getAverage(dataPackets.size())));
     }
 
     public void handleWRQ(DatagramPacket packet){

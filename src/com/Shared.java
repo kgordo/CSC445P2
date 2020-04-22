@@ -10,6 +10,7 @@ class Shared {
     //num threads
     static ArrayList<Short> acks = new ArrayList<>();
     //stores all received acks in order
+    static double ttAvg = 0;
 
     public static void setAcks(int numAcks){
         for(int i = 0; i < numAcks; i++){
@@ -31,4 +32,11 @@ class Shared {
 
     public static void setWork(boolean b){work = b;}
     public static boolean getWork(){return work;}
+
+    public static void updateAverage(double tt){
+        ttAvg += tt;
+    }
+    public static double getAverage(int numThreads){
+        return ttAvg/numThreads;
+    }
 }
